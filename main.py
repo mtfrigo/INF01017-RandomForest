@@ -18,25 +18,29 @@ if __name__ == '__main__':
       filename = ""
       delimiter = ""
       target_class = ""
+      ignore_colums = []
       id_attr = None
 
       if args.dataset.strip() == "Benchmark":
         filename = "datasets/Benchmark.csv"
         delimiter = ";"
+        ignore_colums = []
         target_class = "Joga"
 
       elif args.dataset.strip() == "Stroke":
         filename = "datasets/Stroke.csv"
         delimiter = ","
+        ignore_colums = ["id"]
         target_class = "Target_Stroke"
       
       elif args.dataset.strip() == "Wine":
         filename = "datasets/Wine.csv"
         delimiter = ","
+        ignore_colums = []
         target_class = "Target_WineType"
 
       
-      data_frame = DataFrame(pd.read_csv(filename, sep=delimiter), target_class)
+      data_frame = DataFrame(pd.read_csv(filename, sep=delimiter).drop(ignore_colums, axis=1), target_class)
 
       # Discretizing the data for numeric values
       old_data_frame = data_frame

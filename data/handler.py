@@ -117,19 +117,22 @@ class DataFrame(object):
 
     for attribute in self.get_attributes():
       attribute_values = (self._data_frame.get(attribute)).copy()
+
       try:
         avg = float("{0:.3f}".format(attribute_values.mean()))
 
         for i, v in enumerate(attribute_values):
-          if attribute_values[i] <= avg:
-            new_value = "{0:.3f}<=" + str(avg)
+
+          if isinstance(attribute_values[i], float):
+            if attribute_values[i] <= avg:
+              attribute_values[i] = "{0:.3f}<=" + str(avg)
+            else:
+              attribute_values[i] = "{0:.3f}>" + str(avg)
           else:
-            new_value = "{0:.3f}>" + str(avg)
-
-          attribute_values[i] = new_value
-
+            raise ValueError
         data_frame_copy[attribute] = attribute_values
       except:
+        # print(atribute, 'caiu aqui')
         pass
 
     return DataFrame(data_frame_copy, self._target_class)

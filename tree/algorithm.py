@@ -80,7 +80,6 @@ class DecisionTree(object):
 
       for value in node["value"]:
 
-        print(node["attribute"], test_instance[node["attribute"]].values[0], value)
         if isinstance(test_instance[node["attribute"]].values[0], float):
           expression = value.format(test_instance[node["attribute"]].values[0])
           
@@ -88,7 +87,6 @@ class DecisionTree(object):
             node = node["value"][value]
             break
 
-        print(test_instance[node["attribute"]].values[0] == value)
         if test_instance[node["attribute"]].values[0] == value:
           node = node["value"][value]
           break

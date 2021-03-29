@@ -48,8 +48,7 @@ if __name__ == '__main__':
 
       tree = DecisionTree(data_frame)
       sample = old_data_frame._data_frame.sample()
-      print(sample)
-      print(tree.classify(sample))
+      predict = tree.classify(sample)
 
     else:
       print("The chosen dataset is not supported")

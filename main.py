@@ -1,5 +1,7 @@
 import argparse
 import random
+from data.handler import DataFrame
+from tree.algorithm import DecisionTree
 import pandas as pd
 
 if __name__ == '__main__':
@@ -15,33 +17,35 @@ if __name__ == '__main__':
     if args.dataset in datasets:
       filename = ""
       delimiter = ""
-      class_attr = ""
+      target_class = ""
       id_attr = None
 
       if args.dataset.strip() == "Benchmark":
         filename = "datasets/Benchmark.csv"
         delimiter = ";"
-        target_class_attbr = "Joga"
+        target_class = "Joga"
 
       elif args.dataset.strip() == "Stroke":
         filename = "datasets/Stroke.csv"
         delimiter = ","
-        target_class_attbr = "Target_Stroke"
+        target_class = "Target_Stroke"
       
       elif args.dataset.strip() == "Wine":
         filename = "datasets/Wine.csv"
         delimiter = ","
-        target_class_attbr = "Target_WineType"
+        target_class = "Target_WineType"
 
-      data = pd.read_csv(filename, sep=delimiter)
-
-      print(data)
+      
+      data_frame = DataFrame(pd.read_csv(filename, sep=delimiter), target_class)
 
       # Discretizing the data for numeric values
 
       # Processing the data with chosen algorithm and parameters
-    
-    
+
+      tree = DecisionTree(data_frame)
+      sample = data_frame._data_frame.sample()
+      print(tree.classify(sample))
+
     else:
       print("The chosen dataset is not supported")
   else:

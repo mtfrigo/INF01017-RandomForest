@@ -108,3 +108,29 @@ class DataFrame(object):
 
   def get_attribute_unique_values(self, attribute):
     return self._data_frame.get(attribute).unique()
+
+  def discretize(self):
+    
+    instances_by_atribute = self.get_instances_by_attribute()
+    data_frame_copy = self._data_frame.copy()
+
+
+    for attribute in self.get_attributes():
+      attribute_values = (self._data_frame.get(attribute)).copy()
+      try:
+        avg = float("{0:.3f}".format(attribute_values.mean()))
+
+        for i, v in enumerate(attribute_values):
+          if attribute_values[i] <= avg:
+            new_value = "{0:.3f}<=" + str(avg)
+          else:
+            new_value = "{0:.3f}>" + str(avg)
+
+          attribute_values[i] = new_value
+
+        data_frame_copy[attribute] = attribute_values
+      except:
+        pass
+
+    return DataFrame(data_frame_copy, self._target_class)
+  

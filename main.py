@@ -39,11 +39,12 @@ if __name__ == '__main__':
       data_frame = DataFrame(pd.read_csv(filename, sep=delimiter), target_class)
 
       # Discretizing the data for numeric values
-
-      # Processing the data with chosen algorithm and parameters
+      old_data_frame = data_frame
+      data_frame = data_frame.discretize()
 
       tree = DecisionTree(data_frame)
-      sample = data_frame._data_frame.sample()
+      sample = old_data_frame._data_frame.sample()
+      print(sample)
       print(tree.classify(sample))
 
     else:

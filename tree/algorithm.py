@@ -79,6 +79,14 @@ class DecisionTree(object):
       old_node = node
 
       for value in node["value"]:
+
+        if isinstance(test_instance[node["attribute"]].values[0], float):
+          expression = value.format(test_instance[node["attribute"]].values[0])
+          
+          if bool(eval(expression)):
+            node = node["value"][value]
+            break
+        
         if test_instance[node["attribute"]].values[0] == value:
           node = node["value"][value]
           break

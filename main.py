@@ -44,12 +44,14 @@ if __name__ == '__main__':
 
       # Discretizing the data for numeric values
       old_data_frame = data_frame
-      data_frame = data_frame.discretize()
+      data_frame = data_frame.discretize_by_mean()
+      # data_frame = old_data_frame.discretize_by_neigh()
 
       tree = DecisionTree(data_frame)
       sample = old_data_frame._data_frame.sample()
+      print(sample)
       predict = tree.classify(sample)
-
+      print(tree.print_tree())
     else:
       print("The chosen dataset is not supported")
   else:

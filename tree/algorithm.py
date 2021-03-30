@@ -31,7 +31,8 @@ class DecisionTree(object):
     # 4
     else:
       # 4.1
-      attribute = self._get_best_attribute(data_frame, attributes)
+      attribute = self._get_best_attribute(data_frame, self._select_attributes(attributes))
+
       # 4.2
       node["attribute"] = attribute
 
@@ -66,9 +67,8 @@ class DecisionTree(object):
     info_gain_by_attribute = {}
 
     for attribute in attributes:
-      informative_gain = data_frame.get_informative_gain(attribute)
-      info_gain_by_attribute[attribute] = informative_gain
-
+      information_gain = data_frame.get_information_gain(attribute)
+      info_gain_by_attribute[attribute] = information_gain
     
     return max(info_gain_by_attribute, key=info_gain_by_attribute.get)
 
@@ -95,3 +95,42 @@ class DecisionTree(object):
         node = node["value"][value]
 
     return node["value"]
+  
+  def _print_node(self, node, level = 0):
+    if node["attribute"] is None:
+      return ("|\t" * level) + "|Class: " + str(node["value"]) + "\n"
+
+    else:
+      text = ("|\t" * level) + "|Attr: " + str(node["attribute"]) + "\n"
+
+      for item in node["value"]:
+        text += ("|\t" * (level + 1)) + "|Value: " + str(item) + "\n"
+        text += self._print_node(node["value"][item], (level + 2))
+
+      return text
+
+  def print_tree(self):
+    return self._print_node(self._decision_tree)
+    
+
+  def _select_attributes(self, attributes):
+    max_attributes = 5
+    num_of_attributes = len(attributes)
+
+
+    if num_of_attributes > max_attributes:
+      num_of_selections = math.ceil(num_of_attributes ** 0.5) 
+
+      new_attributes = []
+
+      while(len(new_attributes) < num_of_selections):
+        new_attribute = attributes[random.randint(0, num_of_attributes - 1 )]
+
+        if new_attribute not in new_attributes:
+          new_attributes.append(new_attribute)
+
+      return new_attributes
+    else:
+      return attributes
+
+  

@@ -70,7 +70,7 @@ class DataFrame(object):
     except IndexError:
       return most_occurred_class[0]
 
-  def get_informative_gain(self, attribute):
+  def get_information_gain(self, attribute):
 
     instances_by_atribute = self.get_instances_by_attribute()
 
@@ -109,21 +109,64 @@ class DataFrame(object):
   def get_attribute_unique_values(self, attribute):
     return self._data_frame.get(attribute).unique()
 
-  def discretize(self):
-    
+  def _get_attribute_type(self, attribute):
+    instances_by_atribute = self.get_instances_by_attribute()
+
+    values = instances_by_atribute[attribute]
+
+    only_0_1 = True
+
+    try:
+      for value in values:
+        isinstance(float(value), float)
+        if not (float(value) == 0 or float(value) == 1):
+          only_0_1 = False
+      if only_0_1:
+        raise Exception
+    except:
+      return 'categoric'
+    return 'numeric'
+
+  def discretize_by_neigh(self):
     instances_by_atribute = self.get_instances_by_attribute()
     data_frame_copy = self._data_frame.copy()
 
+    for attribute in self.get_attributes():
+      if self._get_attribute_type(attribute) == 'numeric':
+        values = self._data_frame[[attribute, self._target_class]]
+        values = values.sort_values(attribute)
+
+        previous_value = (values[attribute].values[0], values[self._target_class].values[0])
+
+        cut = []
+        for i in range(1, len(values)):
+          value = (values[attribute].values[i], values[self._target_class].values[i])
+          
+          if previous_value[1] != value[1]:
+            cut.append((previous_value[0] + previous_value[1])/2)
+          
+          previous_value = value
+
+    """
+      Ideias para definir ponto de corte:
+        Ordenar valores do atributo (exemplo, em ordem crescente)
+        Toda vez que se encontra dois exemplos com valor do atributo consecutivo que pertencem a classes distintas, se testa o valor medio desses exemplos
+
+    """
+    
+
+  def discretize_by_mean(self):
+    instances_by_atribute = self.get_instances_by_attribute()
+    data_frame_copy = self._data_frame.copy()
 
     for attribute in self.get_attributes():
       attribute_values = (self._data_frame.get(attribute)).copy()
 
       try:
-        avg = float("{0:.3f}".format(attribute_values.mean()))
-
+        avg = float("{0:.3f}".format(attribute_values.mean()*1.0))
         for i, v in enumerate(attribute_values):
 
-          if isinstance(attribute_values[i], float):
+          if isinstance(attribute_values[i]*1.0, float):
             if attribute_values[i] <= avg:
               attribute_values[i] = "{0:.3f}<=" + str(avg)
             else:
@@ -132,7 +175,6 @@ class DataFrame(object):
             raise ValueError
         data_frame_copy[attribute] = attribute_values
       except:
-        # print(atribute, 'caiu aqui')
         pass
 
     return DataFrame(data_frame_copy, self._target_class)

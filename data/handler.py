@@ -70,6 +70,19 @@ class DataFrame(object):
     except IndexError:
       return most_occurred_class[0]
 
+  def get_most_frequent_attribute_value(self, attribute):
+    instances_by_atribute = self.get_instances_by_attribute()
+    values = instances_by_atribute[attribute]
+
+    dict = {}
+
+    count, value = 0, ''
+    for item in reversed(values):
+        dict[item] = dict.get(item, 0) + 1
+        if dict[item] >= count :
+            count, value = dict[item], item
+    return value
+
   def get_information_gain(self, attribute):
 
     instances_by_atribute = self.get_instances_by_attribute()
@@ -92,7 +105,7 @@ class DataFrame(object):
     
     info = self.get_entropy()
 
-    return info -  info_attribute
+    return info - info_attribute
 
   def get_entropy(self):
     instance_by_class = self.get_instances_by_class()
@@ -127,55 +140,112 @@ class DataFrame(object):
       return 'categoric'
     return 'numeric'
 
-  def discretize_by_neigh(self):
+  def discretize_by_neighborhood(self):
     instances_by_atribute = self.get_instances_by_attribute()
     data_frame_copy = self._data_frame.copy()
 
     for attribute in self.get_attributes():
+
       if self._get_attribute_type(attribute) == 'numeric':
-        values = self._data_frame[[attribute, self._target_class]]
-        values = values.sort_values(attribute)
+        values = (self._data_frame[[attribute, self._target_class]]).copy()
+        values_sorted = (values.sort_values(attribute)).copy()
 
-        previous_value = (values[attribute].values[0], values[self._target_class].values[0])
+        # Get all cut points values
+        previous_value = (values_sorted[attribute].values[0], values_sorted[self._target_class].values[0])
 
-        cut = []
-        for i in range(1, len(values)):
-          value = (values[attribute].values[i], values[self._target_class].values[i])
+        cut_values = []
+        for i in range(1, len(values_sorted)):
+          value = (values_sorted[attribute].values[i], values_sorted[self._target_class].values[i])
           
           if previous_value[1] != value[1]:
-            cut.append((previous_value[0] + previous_value[1])/2)
-          
+            avg = (previous_value[0] + value[0])/2
+            if avg not in cut_values:
+              cut_values.append(avg)
+
           previous_value = value
 
-    """
-      Ideias para definir ponto de corte:
-        Ordenar valores do atributo (exemplo, em ordem crescente)
-        Toda vez que se encontra dois exemplos com valor do atributo consecutivo que pertencem a classes distintas, se testa o valor medio desses exemplos
+        # Start discretizing
+        attribute_values = (self._data_frame.get(attribute)).copy()
 
-    """
-    
+
+        for i, v in enumerate(attribute_values):
+          if v <= cut_values[0]:
+            attribute_values[i] = 0
+            attribute_values[i] = str(cut_values[0]) + "<={0:.3f}"
+          elif v > cut_values[len(cut_values) - 1]:
+            attribute_values[i] = 0
+            attribute_values[i] = str(cut_values[len(cut_values) - 1]) + ">={0:.3f}"
+          else:
+            for j in range(1, len(cut_values)):
+              if cut_values[j-1] <= v and v < cut_values[j]:
+                attribute_values[i] = str(cut_values[j- 1]) + "<={0:.3f}<" + str(cut_values[j])
+
+        data_frame_copy[attribute] = attribute_values
+
+    return DataFrame(data_frame_copy, self._target_class)
 
   def discretize_by_mean(self):
     instances_by_atribute = self.get_instances_by_attribute()
     data_frame_copy = self._data_frame.copy()
 
     for attribute in self.get_attributes():
-      attribute_values = (self._data_frame.get(attribute)).copy()
 
-      try:
-        avg = float("{0:.3f}".format(attribute_values.mean()*1.0))
-        for i, v in enumerate(attribute_values):
+      if self._get_attribute_type(attribute) == 'numeric':
+        attribute_values = (self._data_frame.get(attribute)).copy()
 
-          if isinstance(attribute_values[i]*1.0, float):
-            if attribute_values[i] <= avg:
-              attribute_values[i] = "{0:.3f}<=" + str(avg)
+        try:
+          avg = float("{0:.3f}".format(attribute_values.mean()*1.0))
+          for i, v in enumerate(attribute_values):
+
+            if isinstance(attribute_values[i]*1.0, float):
+              if attribute_values[i] <= avg:
+                attribute_values[i] = "{0:.3f}<=" + str(avg)
+              else:
+                attribute_values[i] = "{0:.3f}>" + str(avg)
             else:
-              attribute_values[i] = "{0:.3f}>" + str(avg)
-          else:
-            raise ValueError
-        data_frame_copy[attribute] = attribute_values
-      except:
-        pass
+              raise ValueError
+          data_frame_copy[attribute] = attribute_values
+        except:
+          pass
+
+      # elif self._get_attribute_type(attribute) == 'categoric':
+        # attribute_values = (self._data_frame.get(attribute)).copy()
+        # most_frequent_value = self.get_most_frequent_attribute_value(attribute)
+
+        # for i, v in enumerate(attribute_values):
+        #   if attribute_values[i] == most_frequent_value:
+        #     attribute_values[i] = "{%s}==" + str(most_frequent_value)
+        #   else:
+        #     attribute_values[i] = "{%s}!=" + str(most_frequent_value)
+
+        # data_frame_copy[attribute] = attribute_values
+
+    return DataFrame(data_frame_copy, self._target_class)
+
+  def normalize(self):
+    instances_by_atribute = self.get_instances_by_attribute()
+    data_frame_copy = self._data_frame.copy()
+
+    for attribute in self.get_attributes():
+
+      if(self._get_attribute_type(attribute) == 'numeric'):
+
+        attribute_values = (self._data_frame.get(attribute)).copy()
+
+        try:
+
+          min_value = min(attribute_values)
+          max_value = max(attribute_values)
+
+          for i, v in enumerate(attribute_values):
+
+            if isinstance(attribute_values[i]*1.0, float):
+              attribute_values[i] = (attribute_values[i] - min_value) / (max_value - min_value)
+            else:
+              raise ValueError
+          data_frame_copy[attribute] = attribute_values
+        except:
+          pass
 
     return DataFrame(data_frame_copy, self._target_class)
   

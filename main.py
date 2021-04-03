@@ -10,6 +10,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument("--dataset", type=str, default='Wine', help="The dataset to test. List of available datasets: " + str(datasets))
   parser.add_argument("--num_of_trees", type=int, default=10, help="The number of trees to ensemble in the random forest. The default is 8.")
+  parser.add_argument("--attributes_per_division", type=int, default=10, help="The number of attributes to consider on each node division. The default is 10.")
 
   args = parser.parse_args()
 
@@ -44,14 +45,19 @@ if __name__ == '__main__':
 
       # Discretizing the data for numeric values
       old_data_frame = data_frame
-      data_frame = data_frame.discretize_by_mean()
-      # data_frame = old_data_frame.discretize_by_neigh()
 
-      tree = DecisionTree(data_frame)
-      sample = old_data_frame._data_frame.sample()
-      print(sample)
-      predict = tree.classify(sample)
-      print(tree.print_tree())
+      data_frame = data_frame.normalize()
+
+      # data_frame = data_frame.discretize_by_mean()
+      data_frame = data_frame.discretize_by_neighborhood()
+
+      tree = DecisionTree(data_frame, args.attributes_per_division)
+
+      for i in range(1, 50):
+        tree.predict_random_sample(data_frame._data_frame.sample(), target_class)
+
+      tree.print_tree()
+
     else:
       print("The chosen dataset is not supported")
   else:

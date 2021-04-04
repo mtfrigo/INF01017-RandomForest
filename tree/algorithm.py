@@ -4,8 +4,10 @@ import random
 class DecisionTree(object):
   _root = None
 
-  def __init__(self, data_frame, n_attributes = 10):
+  def __init__(self, data_frame, attributes_types, n_attributes = 10):
     print("Generating tree...")
+
+    self.attributes_types = attributes_types
     self._n_attributes = n_attributes
     self._root = self._generate(data_frame, data_frame.get_attributes())
     print("Generated tree: \n" + str(self))
@@ -90,16 +92,21 @@ class DecisionTree(object):
 
       for value in node.value:
         # Numeric
-        if node.get_attribute_type() == 'numeric':
-          if isinstance(float(test_instance[node.attribute].values[0]), float) :
+        
+        # if node.get_attribute_type() == 'numeric':
+        if self.attributes_types[node.attribute] == 'numeric':
+
+          if isinstance(float(test_instance[node.attribute].values[0]*1.0), float) :
             expression = value.format(float(test_instance[node.attribute].values[0]))
+            # print(expression, bool(eval(expression)))
 
             if bool(eval(expression)):
               node = node.value[value]
               break
 
         # Categoric
-        elif node.get_attribute_type() == 'categoric':
+        # elif node.get_attribute_type() == 'categoric':
+        elif self.attributes_types[node.attribute] == 'categoric':
           if test_instance[node.attribute].values[0] == value:
             node = node.value[value]
             break

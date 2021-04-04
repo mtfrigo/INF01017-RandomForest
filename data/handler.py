@@ -167,20 +167,21 @@ class DataFrame(object):
         # Start discretizing
         attribute_values = (self._data_frame.get(attribute)).copy()
 
-
         for i, v in enumerate(attribute_values):
           if v <= cut_values[0]:
             attribute_values[i] = 0
-            attribute_values[i] = str(cut_values[0]) + "<={0:.3f}"
-          elif v > cut_values[len(cut_values) - 1]:
+            attribute_values[i] = "{0:.3f}<=" + str(cut_values[0])
+          elif v >= cut_values[len(cut_values) - 1]:
             attribute_values[i] = 0
-            attribute_values[i] = str(cut_values[len(cut_values) - 1]) + ">={0:.3f}"
+            attribute_values[i] = "{0:.3f}>=" + str(cut_values[len(cut_values) - 1])
           else:
+            # TODO 0 or 1 to len(cut_values) or len(cut_values) - 1?
             for j in range(1, len(cut_values)):
               if cut_values[j-1] <= v and v < cut_values[j]:
                 attribute_values[i] = str(cut_values[j- 1]) + "<={0:.3f}<" + str(cut_values[j])
 
         data_frame_copy[attribute] = attribute_values
+
 
     return DataFrame(data_frame_copy, self._target_class)
 

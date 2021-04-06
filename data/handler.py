@@ -1,30 +1,42 @@
 import math
 import pandas as pd
 import random
+import numpy as np
 
 class DataFrame(object):
-
   _data_frame = None
   _header = []
   _target_class = None
 
 
-  def __init__(self, data_frame, target_class):
+  def __init__(self, data_frame, attributes_types, target_class):
     self._data_frame = data_frame
+    self.attributes_types = attributes_types
     self._header = list(self._data_frame.columns.values)
     self._target_class = target_class
 
+  def pre_process(self):
+    data_frame_copy = self._data_frame.copy()
+
+    for attribute in self.get_attributes():
+      if self.attributes_types[attribute] == 'numeric':
+        attribute_values = (self._data_frame.get(attribute)).copy()
+        avg = attribute_values.mean()*1.0
+        for i, v in enumerate(attribute_values):
+          if math.isnan(v):
+            attribute_values[i] = avg
+
+        data_frame_copy[attribute] = attribute_values
+
+    self._data_frame = data_frame_copy
+
   def get_instances(self):
-    
     return self._data_frame
 
   def get_attributes(self):
-    """
-    Get attributes removing the target class from the header
-    """
     attributes = list(self._data_frame.columns.values)
 
-    if attributes.index(self._target_class):
+    if attributes.index(self._target_class) >= 0:
       attributes.remove(self._target_class)
 
     return attributes
@@ -35,7 +47,8 @@ class DataFrame(object):
     data = {}
 
     for _class in classes:
-      data[_class] = (self._data_frame.loc[self._data_frame[self._target_class] == _class]).values
+      values = (self._data_frame.loc[self._data_frame[self._target_class] == _class])
+      data[_class] = values
       # data[_class] = self._data_frame.loc[self._data_frame[self._target_class] == _class]
 
     return data
@@ -51,9 +64,9 @@ class DataFrame(object):
     return data
 
   def get_instances_by_attribute_value(self, attribute, value):
-    data_frame = DataFrame(self._data_frame, self._target_class)
+    data_frame = DataFrame(self._data_frame, self.attributes_types, self._target_class)
     instances_by_attribute = data_frame.get_instances_by_attribute()
-    return DataFrame(data_frame._data_frame.loc[data_frame._data_frame[attribute] == value], self._target_class)
+    return DataFrame(data_frame._data_frame.loc[data_frame._data_frame[attribute] == value], self.attributes_types, self._target_class)
 
   def get_classes(self):
     return self._data_frame.get(self._target_class).unique()
@@ -122,31 +135,13 @@ class DataFrame(object):
   def get_attribute_unique_values(self, attribute):
     return self._data_frame.get(attribute).unique()
 
-  def _get_attribute_type(self, attribute):
-    instances_by_atribute = self.get_instances_by_attribute()
-
-    values = instances_by_atribute[attribute]
-
-    only_0_1 = True
-
-    try:
-      for value in values:
-        isinstance(float(value), float)
-        if not (float(value) == 0 or float(value) == 1):
-          only_0_1 = False
-      if only_0_1:
-        raise Exception
-    except:
-      return 'categoric'
-    return 'numeric'
-
   def discretize_by_neighborhood(self):
     instances_by_atribute = self.get_instances_by_attribute()
     data_frame_copy = self._data_frame.copy()
 
     for attribute in self.get_attributes():
 
-      if self._get_attribute_type(attribute) == 'numeric':
+      if self.attributes_types[attribute] == 'numeric':
         values = (self._data_frame[[attribute, self._target_class]]).copy()
         values_sorted = (values.sort_values(attribute)).copy()
 
@@ -183,7 +178,7 @@ class DataFrame(object):
         data_frame_copy[attribute] = attribute_values
 
 
-    return DataFrame(data_frame_copy, self._target_class)
+    return DataFrame(data_frame_copy, self.attributes_types, self._target_class)
 
   def discretize_by_mean(self):
     instances_by_atribute = self.get_instances_by_attribute()
@@ -191,7 +186,7 @@ class DataFrame(object):
 
     for attribute in self.get_attributes():
 
-      if self._get_attribute_type(attribute) == 'numeric':
+      if self.attributes_types[attribute] == 'numeric':
         attribute_values = (self._data_frame.get(attribute)).copy()
 
         try:
@@ -209,7 +204,7 @@ class DataFrame(object):
         except:
           pass
 
-      # elif self._get_attribute_type(attribute) == 'categoric':
+      # elif self.attributes_types[attribute] == 'categoric':
         # attribute_values = (self._data_frame.get(attribute)).copy()
         # most_frequent_value = self.get_most_frequent_attribute_value(attribute)
 
@@ -221,7 +216,7 @@ class DataFrame(object):
 
         # data_frame_copy[attribute] = attribute_values
 
-    return DataFrame(data_frame_copy, self._target_class)
+    return DataFrame(data_frame_copy, self.attributes_types, self._target_class)
 
   def normalize(self):
     instances_by_atribute = self.get_instances_by_attribute()
@@ -229,7 +224,7 @@ class DataFrame(object):
 
     for attribute in self.get_attributes():
 
-      if(self._get_attribute_type(attribute) == 'numeric'):
+      if(self.attributes_types[attribute] == 'numeric'):
 
         attribute_values = (self._data_frame.get(attribute)).copy()
 
@@ -248,5 +243,63 @@ class DataFrame(object):
         except:
           pass
 
-    return DataFrame(data_frame_copy, self._target_class)
-  
+    return DataFrame(data_frame_copy, self.attributes_types, self._target_class)
+
+  def bootstrap(self, ratio = 1): 
+    data_frame_copy = self._data_frame
+    columns = data_frame_copy.columns.values
+
+    values = data_frame_copy.values
+
+    all_samples_i = np.arange(start=0, stop=len(values))
+
+    train_samples_i = np.random.choice(range(len(values)), size=round(len(values)*ratio), replace=True)
+    train_samples = values[train_samples_i]
+    
+    # These test samples doesnt matter
+    test_samples_i = np.setdiff1d(all_samples_i, train_samples_i)
+    test_samples = values[test_samples_i]
+
+    data_frame_train = pd.DataFrame(train_samples, columns = columns)
+    data_frame_test = pd.DataFrame(test_samples, columns = columns)
+
+    return (DataFrame(data_frame_train, self.attributes_types, self._target_class), DataFrame(data_frame_test, self.attributes_types, self._target_class))
+
+  def stratify(self, k):
+    columns = self._data_frame.columns.values
+
+    folds = [[] for i in range(0, k)]
+
+    instances = self._data_frame.copy()
+
+    instances_by_class = self.get_instances_by_class()
+
+    classes = list(instances_by_class.keys())
+
+    n_fold_instances = math.ceil(len(instances)/k)
+
+    for label in classes:
+      proportion = len(instances_by_class[label])/ len(instances)
+      n_label_fold_instances = round(n_fold_instances * proportion)
+
+      instances_by_label = instances_by_class[label].values
+      instances_by_label_i = list(range(len(instances_by_label)))
+
+      for f in range(0, k):
+        for i in range(0, n_label_fold_instances):
+          
+          raffled_index = random.randint(0, len(instances_by_label_i) - 1)
+
+          if len(instances_by_label_i) > 1:
+            instance_i = instances_by_label_i.pop(raffled_index)
+            folds[f].append(instances_by_label[instance_i])
+          else:
+            instance_i = instances_by_label_i[0]
+            instances_by_label_i = []
+            break
+
+    return [pd.DataFrame(folds[f], columns = columns) for f in range(0, k)]
+
+  def create_subset(self, values):
+    columns = self._data_frame.columns.values
+    return DataFrame(pd.DataFrame(values, columns = columns) , self.attributes_types, self._target_class)

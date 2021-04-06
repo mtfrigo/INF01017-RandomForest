@@ -4,13 +4,12 @@ import random
 class DecisionTree(object):
   _root = None
 
-  def __init__(self, data_frame, attributes_types, n_attributes = 10):
+  def __init__(self, data_frame,  n_attributes = 10):
     print("Generating tree...")
-
-    self.attributes_types = attributes_types
+    self.attributes_types = data_frame.attributes_types
     self._n_attributes = n_attributes
     self._root = self._generate(data_frame, data_frame.get_attributes())
-    print("Generated tree: \n" + str(self))
+    print("Generated tree: " )
 
   def _generate(self, data_frame, attributes):
     # This algorithm is presented in https://www.youtube.com/watch?v=gdyESc6LgfE&list=PL2t5OdGxbjUOpFz0XkEpH9gAxZVvvVZ9B&index=3&ab_channel=MarianaMendoza
@@ -43,6 +42,7 @@ class DecisionTree(object):
 
       # 4.2
       node.attribute = attribute
+      node.attribute_type = self.attributes_types[attribute]
       node.info_gain = info_gain
       node.attributes_pool = attributes_pool
 
@@ -53,6 +53,7 @@ class DecisionTree(object):
         
       except ValueError:
         attribute = node.attribute_list[0]
+        node.attribute_type = self.attributes_types[node.attribute_list[0]]
         node.attribute_list = []
 
       # 4.4
@@ -92,22 +93,21 @@ class DecisionTree(object):
 
       for value in node.value:
         # Numeric
-        
-        # if node.get_attribute_type() == 'numeric':
-        if self.attributes_types[node.attribute] == 'numeric':
+        if node.attribute_type == 'numeric':
 
-          if isinstance(float(test_instance[node.attribute].values[0]*1.0), float) :
-            expression = value.format(float(test_instance[node.attribute].values[0]))
-            # print(expression, bool(eval(expression)))
+          if isinstance(float(test_instance[node.attribute]*1.0), float) and not math.isnan(float(test_instance[node.attribute]*1.0)):
+          # if isinstance(float(test_instance[node.attribute].values[0]*1.0), float) :
+            expression = value.format(float(test_instance[node.attribute]))
+            # expression = value.format(float(test_instance[node.attribute].values[0]))
 
             if bool(eval(expression)):
               node = node.value[value]
               break
 
         # Categoric
-        # elif node.get_attribute_type() == 'categoric':
-        elif self.attributes_types[node.attribute] == 'categoric':
-          if test_instance[node.attribute].values[0] == value:
+        elif node.attribute_type == 'categoric':
+          if test_instance[node.attribute] == value:
+          # if test_instance[node.attribute].values[0] == value:
             node = node.value[value]
             break
 
@@ -158,12 +158,28 @@ class DecisionTree(object):
     predict = self.classify(sample)
     print('Y:', sample[target_class].values[0], 'Predict: ', predict)
 
+  def evaluate(self, train_set):
+    target = train_set._target_class
+
+    predicts = 0
+    right_predicts = 0
+
+    for row_dict in train_set._data_frame.to_dict(orient="records"):
+      predict = self.classify(row_dict)
+      predicts += 1
+      if row_dict[target] == predict:
+        right_predicts += 1
+
+    print(predicts, right_predicts, right_predicts/predicts)
+
 
 class Node(object):
   def __init__(self, data_frame):
     self.data_frame = data_frame
     
     self.attribute = None
+    self.attribute_type = None
+
     self.value = {}
     self.label = None
     self.is_leaf = False
@@ -176,4 +192,6 @@ class Node(object):
     self.value[value] = Node
 
   def get_attribute_type(self):
-    return self.data_frame._get_attribute_type(self.attribute)
+    return self.attribute_type
+  
+  

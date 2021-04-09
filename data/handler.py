@@ -174,7 +174,6 @@ class DataFrame(object):
             attribute_values[i] = 0
             attribute_values[i] = "{0:.3f}>=" + str(cut_values[len(cut_values) - 1])
           else:
-            # TODO 0 or 1 to len(cut_values) or len(cut_values) - 1?
             for j in range(1, len(cut_values)):
               if cut_values[j-1] <= v and v < cut_values[j]:
                 attribute_values[i] = str(cut_values[j- 1]) + "<={0:.3f}<" + str(cut_values[j])
@@ -189,12 +188,12 @@ class DataFrame(object):
     data_frame_copy = self._data_frame.copy()
 
     for attribute in self.get_attributes():
-
       if self.attributes_types[attribute] == 'numeric':
         attribute_values = (self._data_frame.get(attribute)).copy()
 
         try:
           avg = float("{0:.3f}".format(attribute_values.mean()*1.0))
+
           for i, v in enumerate(attribute_values):
 
             if isinstance(attribute_values[i]*1.0, float):
@@ -207,18 +206,6 @@ class DataFrame(object):
           data_frame_copy[attribute] = attribute_values
         except:
           pass
-
-      # elif self.attributes_types[attribute] == 'categoric':
-        # attribute_values = (self._data_frame.get(attribute)).copy()
-        # most_frequent_value = self.get_most_frequent_attribute_value(attribute)
-
-        # for i, v in enumerate(attribute_values):
-        #   if attribute_values[i] == most_frequent_value:
-        #     attribute_values[i] = "{%s}==" + str(most_frequent_value)
-        #   else:
-        #     attribute_values[i] = "{%s}!=" + str(most_frequent_value)
-
-        # data_frame_copy[attribute] = attribute_values
 
     return DataFrame(data_frame_copy, self.attributes_types, self._target_class)
 
@@ -249,7 +236,7 @@ class DataFrame(object):
 
     return DataFrame(data_frame_copy, self.attributes_types, self._target_class)
 
-  def bootstrap(self, ratio = 0.9): 
+  def bootstrap(self, ratio = 1): 
     data_frame_copy = self._data_frame
     columns = data_frame_copy.columns.values
 
@@ -259,7 +246,7 @@ class DataFrame(object):
 
     train_samples_i = np.random.choice(range(len(values)), size=round(len(values)*ratio), replace=True)
     train_samples = values[train_samples_i]
-    
+
     # These test samples doesnt matter
     test_samples_i = np.setdiff1d(all_samples_i, train_samples_i)
     test_samples = values[test_samples_i]

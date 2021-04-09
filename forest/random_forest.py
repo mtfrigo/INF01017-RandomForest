@@ -20,8 +20,9 @@ class RandomForest(object):
 
   def bootstrap(self):
     for n in range(self.n_trees):
-      (data_frame_train, data_frame_test) = self.data_frame.bootstrap()
+      (data_frame_train, data_frame_test) = self.data_frame.bootstrap(1)
       tree = DecisionTree(data_frame_train.discretize_by_neighborhood(), self.attributes_per_division)
+      # tree = DecisionTree(data_frame_train.discretize_by_mean(), self.attributes_per_division)
       self.trees.append(tree)
 
   def classify(self, test_instance):

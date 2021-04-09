@@ -11,6 +11,7 @@ class CrossValidation(object):
   def bagging(self, k):
     folds = self.data_frame.stratify(k)
 
+
     self.test_set = self.data_frame.create_subset(folds.pop(0)) 
 
     merged_folds = []
@@ -55,7 +56,7 @@ class CrossValidation(object):
 
     y_actu = pd.Series(all_classes, name='Classe verdadeira')
     y_pred = pd.Series(all_predictions, name='Classe predita')
-    confusion = pd.crosstab(y_actu, y_pred)
+    confusion = pd.crosstab(y_pred, y_actu)
 
     print(confusion)
 

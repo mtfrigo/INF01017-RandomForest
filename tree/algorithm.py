@@ -10,6 +10,8 @@ class DecisionTree(object):
     # print("Generating tree...")
     self.attributes_types = data_frame.attributes_types
     self._n_attributes = n_attributes
+
+
     self._root = self._generate(data_frame, data_frame.get_attributes())
 
   def _generate(self, data_frame, attributes):
@@ -63,15 +65,14 @@ class DecisionTree(object):
       for value in unique_values:
         sub_data_frame = node.data_frame.get_instances_by_attribute_value(attribute, value)
 
-        # 4.4.2
         if len(sub_data_frame.get_instances()) == 0:
           node.attribute = None
           node.label = node.data_frame.get_most_frequent_class()
           node.is_leaf = True
           return node
-        
+
         # 4.4.3
-        node.append_child(value, self._generate(sub_data_frame, attributes))
+        node.append_child(value, self._generate(sub_data_frame, node.attribute_list))
 
       # 4.5
       return node

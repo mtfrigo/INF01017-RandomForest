@@ -2,6 +2,7 @@
 from tree.algorithm import DecisionTree
 import numpy as np
 import pandas as pd
+#from pandas_ml import ConfusionMatrix
 
 class RandomForest(object):
   def __init__(self, train_set, n_trees, attributes_per_division):
@@ -59,4 +60,5 @@ class RandomForest(object):
     return max(counter, key=counter.get)
 
   
+
 

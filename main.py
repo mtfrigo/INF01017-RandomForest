@@ -128,7 +128,7 @@ if __name__ == '__main__':
       # data_frame = data_frame.discretize_by_mean()
       # discrete_data_frame = normalized_data_frame.discretize_by_neighborhood()
 
-      forest = RandomForest(data_frame.normalize(), 10)
+      forest = RandomForest(data_frame.normalize(), args.num_of_trees)
       # tree = DecisionTree(data_frame.discretize_by_neighborhood(), args.attributes_per_division)
 
       # for i in range(1, 50):

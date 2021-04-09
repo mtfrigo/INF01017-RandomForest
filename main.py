@@ -1,17 +1,23 @@
 import argparse
 import random
+import pandas as pd
+
 from data.handler import DataFrame
 from tree.algorithm import DecisionTree
 from forest.random_forest import RandomForest
-import pandas as pd
+from validation.cross_validation import CrossValidation
 
 if __name__ == '__main__':
   datasets = ['Benchmark', 'Wine', 'Stroke', 'HouseVotes', 'WineRecognition']
 
   parser = argparse.ArgumentParser()
   parser.add_argument("--dataset", type=str, default='Wine', help="The dataset to test. List of available datasets: " + str(datasets))
-  parser.add_argument("--num_of_trees", type=int, default=10, help="The number of trees to ensemble in the random forest. The default is 8.")
+  parser.add_argument("--n_trees", type=int, default=10, help="The number of trees to ensemble in the random forest. The default is 10.")
+  parser.add_argument("--k_folds", type=int, default=10, help="The number of folds used in the cross-validation. The default is 10.")
   parser.add_argument("--attributes_per_division", type=int, default=10, help="The number of attributes to consider on each node division. The default is 10.")
+  parser.add_argument("--algorithm", type=str, default="RandomForest", help="The algorithm to be executed. Could be either RandomForest or DecisionTree.")
+  parser.add_argument("--benchmark", type=bool, default=False, help="If the execution should follow the benchmark walkthough.")
+  parser.add_argument("--print_tree", type=bool, default=False, help="If the tree generated in the DecisionTree algorithm should be printed.")
 
   args = parser.parse_args()
 
@@ -23,7 +29,7 @@ if __name__ == '__main__':
       ignore_colums = []
       id_attr = None
 
-      if args.dataset.strip() == "Benchmark":
+      if args.dataset.strip() == "Benchmark" or args.benchmark == True:
         filename = "datasets/Benchmark.csv"
         delimiter = ";"
         ignore_colums = []
@@ -119,24 +125,26 @@ if __name__ == '__main__':
           "export-administration-act-south-africa": 'categoric'
         }
 
-      
       data_frame = DataFrame(pd.read_csv(filename, sep=delimiter).drop(ignore_colums, axis=1), attributes_types, target_class)
       data_frame.pre_process()
-      # Discretizing the data for numeric values
-      # normalized_data_frame = data_frame.normalize()
+      data_frame = data_frame.normalize()
 
-      # data_frame = data_frame.discretize_by_mean()
-      # discrete_data_frame = normalized_data_frame.discretize_by_neighborhood()
+      if args.benchmark == True:
+        data_frame = data_frame.discretize_by_neighborhood()
+        tree = DecisionTree(data_frame, args.attributes_per_division)
+        tree.print_tree()
+      elif args.algorithm == "RandomForest":
+        validation = CrossValidation(data_frame, args.k_folds)
+        forest = RandomForest(validation.train_set, args.n_trees, args.attributes_per_division)
+        classifications = forest.classify_dataset(validation.test_set)
+        validation.validate(classifications)
 
-      forest = RandomForest(data_frame.normalize(), 10)
-      # tree = DecisionTree(data_frame.discretize_by_neighborhood(), args.attributes_per_division)
-
-      # for i in range(1, 50):
-      #   tree = DecisionTree(data_frame.discretize_by_neighborhood(), args.attributes_per_division)
-      #   for i in range(1, 10):
-      #     tree.predict_random_sample(data_frame.normalize()._data_frame.sample(), target_class)
-      # tree.print_tree()
-
+      elif args.algorithm == "DecisionTree":
+        tree = DecisionTree(data_frame.discretize_by_neighborhood(), args.attributes_per_division)
+        if args.print_tree == True:
+          tree.print_tree()
+      else:
+        print("The chosen algorithm is not supported")
     else:
       print("The chosen dataset is not supported")
   else:

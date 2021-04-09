@@ -4,59 +4,24 @@ import numpy as np
 import pandas as pd
 
 class RandomForest(object):
-  def __init__(self, data_frame, n_trees):
+  def __init__(self, train_set, n_trees, attributes_per_division):
     print("Generating random forest...")
 
-    self.data_frame = data_frame
+    self.data_frame = train_set
     self.n_trees = n_trees
     self.trees = []
-    self.training_sets = []
-    self.testing_sets = []
+    self.attributes_per_division = attributes_per_division
 
     self.generate()
 
-  def cross_validation(self, k):
-    print("oi")
-
-
   def generate(self):
-    k = 10
-    # 1 - Stratify the data_frame and divides the dataset in k-folds, where 1 fold is for test
-      # test_set => take 1 fold
-      # train_set => merge of others folds 
+    self.bootstrap()
 
-    folds = self.data_frame.stratify(k)
-    test_set = self.data_frame.create_subset(folds.pop(0)) 
-
-    merged_folds = []
-    for fold in folds:
-      for i in range(len(fold.values)):
-        merged_folds.append(fold.values[i])
-
-    train_set = self.data_frame.create_subset(merged_folds)
-
-    # 2 - With the train_set 
-      # bootstrap and generate n trees
-      # each tree generated with one bootstrap generated with the train_set
-
+  def bootstrap(self):
     for n in range(self.n_trees):
-      (data_frame_train, data_frame_test) = train_set.bootstrap()
-
-      tree = DecisionTree(data_frame_train.discretize_by_neighborhood(), 10)
+      (data_frame_train, data_frame_test) = self.data_frame.bootstrap()
+      tree = DecisionTree(data_frame_train.discretize_by_neighborhood(), self.attributes_per_division)
       self.trees.append(tree)
-
-    # 3 - Classify all the test_set instance
-      # Each tree generate a label
-      # Make the majority voting  
-
-    classifications = self.classify_dataset(test_set)
-
-    # 4 - Evaluate
-      # Accuracy mean and deviation
-
-    accuracy = self.validate(classifications)
-
-    print("Accuracy: " + "{:.2f}".format(accuracy*100) + "%" )
 
   def classify(self, test_instance):
     instance_predictions = []
@@ -79,7 +44,6 @@ class RandomForest(object):
       classifications.append((instance, instance[target], predict))
     return classifications
     
-
   def voting(self, predictions):
     counter = {}
     unique_labels = []
@@ -94,17 +58,5 @@ class RandomForest(object):
 
     return max(counter, key=counter.get)
 
-  def validate(self, classifications):
-
-    right_predictions = 0
-
-    for c in classifications:
-      (instance, label, prediction) = c
-
-      if label == prediction:
-        right_predictions += 1
-
-    accuracy = right_predictions / len(classifications)
-
-    return accuracy
+  
 

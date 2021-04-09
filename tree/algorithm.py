@@ -1,15 +1,16 @@
 import math
 import random
 
+random.seed(311)
+
 class DecisionTree(object):
   _root = None
 
   def __init__(self, data_frame,  n_attributes = 10):
-    print("Generating tree...")
+    # print("Generating tree...")
     self.attributes_types = data_frame.attributes_types
     self._n_attributes = n_attributes
     self._root = self._generate(data_frame, data_frame.get_attributes())
-    print("Generated tree: " )
 
   def _generate(self, data_frame, attributes):
     # This algorithm is presented in https://www.youtube.com/watch?v=gdyESc6LgfE&list=PL2t5OdGxbjUOpFz0XkEpH9gAxZVvvVZ9B&index=3&ab_channel=MarianaMendoza
@@ -32,7 +33,6 @@ class DecisionTree(object):
       node.label = node.data_frame.get_most_frequent_class()
       node.is_leaf = True
       return node
-
     
     # 4
     else:
@@ -95,10 +95,8 @@ class DecisionTree(object):
         # Numeric
         if node.attribute_type == 'numeric':
 
-          if isinstance(float(test_instance[node.attribute]*1.0), float) and not math.isnan(float(test_instance[node.attribute]*1.0)):
-          # if isinstance(float(test_instance[node.attribute].values[0]*1.0), float) :
+          if isinstance(float(test_instance[node.attribute]*1.0), float):
             expression = value.format(float(test_instance[node.attribute]))
-            # expression = value.format(float(test_instance[node.attribute].values[0]))
 
             if bool(eval(expression)):
               node = node.value[value]
@@ -107,7 +105,6 @@ class DecisionTree(object):
         # Categoric
         elif node.attribute_type == 'categoric':
           if test_instance[node.attribute] == value:
-          # if test_instance[node.attribute].values[0] == value:
             node = node.value[value]
             break
 
@@ -141,6 +138,7 @@ class DecisionTree(object):
     num_of_attributes = len(attributes)
 
     if num_of_attributes > max_attributes:
+      # Parameter 'm'
       num_of_selections = int(math.ceil(math.sqrt(len(attributes))))
       new_attributes = []
 

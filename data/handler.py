@@ -3,6 +3,10 @@ import pandas as pd
 import random
 import numpy as np
 
+# 549
+random.seed(311)
+np.random.seed(311)
+
 class DataFrame(object):
   _data_frame = None
   _header = []
@@ -245,7 +249,7 @@ class DataFrame(object):
 
     return DataFrame(data_frame_copy, self.attributes_types, self._target_class)
 
-  def bootstrap(self, ratio = 1): 
+  def bootstrap(self, ratio = 0.9): 
     data_frame_copy = self._data_frame
     columns = data_frame_copy.columns.values
 
@@ -260,6 +264,8 @@ class DataFrame(object):
     test_samples_i = np.setdiff1d(all_samples_i, train_samples_i)
     test_samples = values[test_samples_i]
 
+    print(len(train_samples))
+
     data_frame_train = pd.DataFrame(train_samples, columns = columns)
     data_frame_test = pd.DataFrame(test_samples, columns = columns)
 
@@ -271,16 +277,18 @@ class DataFrame(object):
     folds = [[] for i in range(0, k)]
 
     instances = self._data_frame.copy()
-
     instances_by_class = self.get_instances_by_class()
 
     classes = list(instances_by_class.keys())
 
+
     n_fold_instances = math.ceil(len(instances)/k)
+
 
     for label in classes:
       proportion = len(instances_by_class[label])/ len(instances)
-      n_label_fold_instances = round(n_fold_instances * proportion)
+
+      n_label_fold_instances = math.floor(n_fold_instances * proportion)
 
       instances_by_label = instances_by_class[label].values
       instances_by_label_i = list(range(len(instances_by_label)))

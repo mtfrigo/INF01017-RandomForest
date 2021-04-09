@@ -1,7 +1,7 @@
 import math
 import random
 
-random.seed(311)
+random.seed(654)
 
 class DecisionTree(object):
   _root = None

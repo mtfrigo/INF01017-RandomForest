@@ -1,5 +1,6 @@
 import math
 import random
+import pandas as pd
 
 class CrossValidation(object):
 
@@ -91,6 +92,3 @@ class CrossValidation(object):
     print("Random Forest Precision: " + "{:.2f}".format(precision * 100) + "%")
     print("Random Forest Recall: " + "{:.2f}".format(recall * 100) + "%")
     print("Random Forest F-Score: " + "{:.2f}".format(f_score * 100) + "%")
-
-    # return accuracy
-  

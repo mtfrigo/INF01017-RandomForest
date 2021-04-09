@@ -3,9 +3,9 @@ import pandas as pd
 import random
 import numpy as np
 
-# 549
-random.seed(311)
-np.random.seed(311)
+# 549 #311 #777 
+random.seed(654)
+np.random.seed(654)
 
 class DataFrame(object):
   _data_frame = None
@@ -264,7 +264,7 @@ class DataFrame(object):
     test_samples_i = np.setdiff1d(all_samples_i, train_samples_i)
     test_samples = values[test_samples_i]
 
-    print(len(train_samples))
+    # print(len(train_samples))
 
     data_frame_train = pd.DataFrame(train_samples, columns = columns)
     data_frame_test = pd.DataFrame(test_samples, columns = columns)

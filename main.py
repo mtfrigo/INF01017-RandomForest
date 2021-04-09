@@ -138,7 +138,6 @@ if __name__ == '__main__':
         forest = RandomForest(validation.train_set, args.n_trees, args.attributes_per_division)
         classifications = forest.classify_dataset(validation.test_set)
         validation.validate(classifications)
-
       elif args.algorithm == "DecisionTree":
         tree = DecisionTree(data_frame.discretize_by_neighborhood(), args.attributes_per_division)
         if args.print_tree == True:

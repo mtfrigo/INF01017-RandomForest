@@ -6,11 +6,9 @@ random.seed(654)
 class DecisionTree(object):
   _root = None
 
-  def __init__(self, data_frame,  n_attributes = 10):
+  def __init__(self, data_frame):
     # print("Generating tree...")
     self.attributes_types = data_frame.attributes_types
-    self._n_attributes = n_attributes
-
 
     self._root = self._generate(data_frame, data_frame.get_attributes())
 
@@ -117,12 +115,15 @@ class DecisionTree(object):
 
   def _print_node(self, node, level = 0):
     if node.is_leaf is True:
-      return ("|\t" * level) + "|Class: " + str(node.label) + "\n"
+      return ("|\t" * int(level-1)) + "|    └── Label: " + str(node.label) + "\n"
     else:
-      text = ("|\t" * level) + "|Attr: " + str(node.attribute) + " Gain (" + str(round(node.info_gain,3)) + ")\n"
+      if(level == 0):
+        text = "Attr: " + str(node.attribute) + " [Gain: " + str(round(node.info_gain,3)) + "]\n"
+      else:
+        text = ("|\t" * int(level-1)) + "|    └── Attr: " + str(node.attribute) + " [Gain: " + str(round(node.info_gain,3)) + "]\n"
 
       for item in node.value:
-        text += ("|\t" * (level + 1)) + "|Value: " + str(item) + "\n"
+        text += ("|\t" * int(level+1)) + "└── Value: " + str(item) + "\n"
         text += self._print_node(node.value[item], (level + 2))
 
       return text
@@ -135,23 +136,19 @@ class DecisionTree(object):
   def _select_attributes(self, attributes):
     random.shuffle(attributes)
     
-    max_attributes = self._n_attributes
     num_of_attributes = len(attributes)
 
-    if num_of_attributes > max_attributes:
-      # Parameter 'm'
-      num_of_selections = int(math.ceil(math.sqrt(len(attributes))))
-      new_attributes = []
+    # Parameter 'm' - Number of sampled attributes
+    num_of_selections = int(math.ceil(math.sqrt(len(attributes))))
+    new_attributes = []
 
-      while(len(new_attributes) < num_of_selections):
-        new_attribute = attributes[random.randint(0, num_of_attributes - 1 )]
+    while(len(new_attributes) < num_of_selections):
+      new_attribute = attributes[random.randint(0, num_of_attributes - 1 )]
 
-        if new_attribute not in new_attributes:
-          new_attributes.append(new_attribute)
+      if new_attribute not in new_attributes:
+        new_attributes.append(new_attribute)
 
-      return new_attributes
-    else:
-      return attributes
+    return new_attributes
 
   def predict_random_sample(self, sample, target_class):
     predict = self.classify(sample)

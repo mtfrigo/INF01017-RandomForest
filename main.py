@@ -2,8 +2,8 @@ import argparse
 import random
 import pandas as pd
 
-from data.handler import DataFrame
-from tree.algorithm import DecisionTree
+from data.dataframe import DataFrame
+from tree.tree import DecisionTree
 from forest.random_forest import RandomForest
 from validation.cross_validation import CrossValidation
 
@@ -14,7 +14,6 @@ if __name__ == '__main__':
   parser.add_argument("--dataset", type=str, default='Wine', help="The dataset to test. List of available datasets: " + str(datasets))
   parser.add_argument("--n_trees", type=int, default=10, help="The number of trees to ensemble in the random forest. The default is 10.")
   parser.add_argument("--k_folds", type=int, default=10, help="The number of folds used in the cross-validation. The default is 10.")
-  parser.add_argument("--attributes_per_division", type=int, default=10, help="The number of attributes to consider on each node division. The default is 10.")
   parser.add_argument("--algorithm", type=str, default="RandomForest", help="The algorithm to be executed. Could be either RandomForest or DecisionTree.")
   parser.add_argument("--benchmark", type=bool, default=False, help="If the execution should follow the benchmark walkthough.")
   parser.add_argument("--print_tree", type=bool, default=False, help="If the tree generated in the DecisionTree algorithm should be printed.")
@@ -131,15 +130,15 @@ if __name__ == '__main__':
 
       if args.benchmark == True:
         data_frame = data_frame.discretize_by_neighborhood()
-        tree = DecisionTree(data_frame, args.attributes_per_division)
+        tree = DecisionTree(data_frame)
         tree.print_tree()
       elif args.algorithm == "RandomForest":
         validation = CrossValidation(data_frame, args.k_folds)
-        forest = RandomForest(validation.train_set, args.n_trees, args.attributes_per_division)
+        forest = RandomForest(validation.train_set, args.n_trees)
         classifications = forest.classify_dataset(validation.test_set)
         validation.validate(classifications)
       elif args.algorithm == "DecisionTree":
-        tree = DecisionTree(data_frame.discretize_by_neighborhood(), args.attributes_per_division)
+        tree = DecisionTree(data_frame.discretize_by_neighborhood())
         if args.print_tree == True:
           tree.print_tree()
       else:

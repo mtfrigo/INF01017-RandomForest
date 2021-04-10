@@ -1,17 +1,16 @@
 
-from tree.algorithm import DecisionTree
+from tree.tree import DecisionTree
 import numpy as np
 import pandas as pd
 #from pandas_ml import ConfusionMatrix
 
 class RandomForest(object):
-  def __init__(self, train_set, n_trees, attributes_per_division):
+  def __init__(self, train_set, n_trees):
     print("Generating random forest...")
 
     self.data_frame = train_set
     self.n_trees = n_trees
     self.trees = []
-    self.attributes_per_division = attributes_per_division
 
     self.generate()
 
@@ -21,8 +20,8 @@ class RandomForest(object):
   def bootstrap(self):
     for n in range(self.n_trees):
       (data_frame_train, data_frame_test) = self.data_frame.bootstrap(1)
-      tree = DecisionTree(data_frame_train.discretize_by_neighborhood(), self.attributes_per_division)
-      # tree = DecisionTree(data_frame_train.discretize_by_mean(), self.attributes_per_division)
+      tree = DecisionTree(data_frame_train.discretize_by_neighborhood())
+      # tree = DecisionTree(data_frame_train.discretize_by_mean())
       self.trees.append(tree)
 
   def classify(self, test_instance):

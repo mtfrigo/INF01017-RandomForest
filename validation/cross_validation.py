@@ -30,6 +30,8 @@ class CrossValidation(object):
     total_TN = 0
     total_FP = 0
     total_FN = 0
+    total_precision = 0
+    macro_avg = 0
 
     true_positives = {}
     true_negatives = {}
@@ -83,13 +85,17 @@ class CrossValidation(object):
       print("Class", class_, "Precision: ", "{:.2f}".format(precision[class_] * 100) + "%")
       print("Class", class_, "Recall: ", "{:.2f}".format(recall[class_] * 100) + "%")
       print("Class", class_, "F-Score: ", "{:.2f}".format(f_score[class_] * 100) + "%")
+      total_precision += precision[class_]
 
     # Micro F-Score
     recall = total_TP / (total_TP + total_FN)
     precision = total_TP / (total_TP + total_FP)
     accuracy = total_TP / confusion_matrix_sum
     f_score = 2 * ((precision * recall) / (precision + recall))
+    macro_avg = total_precision / len(classes)
     print("Random Forest Accuracy: " + "{:.2f}".format(accuracy*100) + "%")
+    print("Random Forest Macro Average: " + "{:.2f}".format(macro_avg * 100) + "%")
     print("Random Forest Precision: " + "{:.2f}".format(precision * 100) + "%")
     print("Random Forest Recall: " + "{:.2f}".format(recall * 100) + "%")
     print("Random Forest F-Score: " + "{:.2f}".format(f_score * 100) + "%")
+

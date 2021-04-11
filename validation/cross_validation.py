@@ -51,9 +51,39 @@ class CrossValidation(object):
 
     # Creating confusion matrix
     for c in classifications:
-      (instance, label, prediction) = c
-      all_classes.append(label)
-      all_predictions.append(prediction)
+      (instance, class_, prediction) = c
+
+      if class_ == prediction:
+        true_positives[class_] += 1
+
+        for _class_ in classes:
+          if _class_ != class_:
+            true_negatives[_class_] += 1
+
+      else:
+        for _class_ in classes:
+          if _class_ == prediction:
+            false_positives[_class_] += 1
+          else:
+            false_negatives[_class_] += 1
+
+        
+    # total_TP = 0
+    # total_TN = 0
+    # total_FP = 0
+    # total_FN = 0
+
+    for class_ in classes:
+      total_TP += true_positives[class_]
+      total_TN += true_negatives[class_]
+      total_FP += false_positives[class_]
+      total_FN += false_negatives[class_]
+
+
+    print(total_TP, total_TN, total_FP, total_FN)
+
+
+    print(classes)
 
     y_actu = pd.Series(all_classes, name='True class')
     y_pred = pd.Series(all_predictions, name='Predicted class')

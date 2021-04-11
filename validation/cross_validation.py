@@ -21,10 +21,9 @@ class CrossValidation(object):
     self.train_set = self.data_frame.create_subset(merged_folds)
 
   def validate(self, classifications):
-    classes = self.data_frame.get_classes()
-
     all_predictions = []
     all_classes = []
+    classes = []
     total_TP = 0
     total_TN = 0
     total_FP = 0
@@ -40,15 +39,6 @@ class CrossValidation(object):
     recall = {}
     f_score = {}
 
-    for class_ in classes:
-      true_positives[class_] = 0
-      true_negatives[class_] = 0
-      false_positives[class_] = 0
-      false_negatives[class_] = 0
-      precision[class_] = 0
-      recall[class_] = 0
-      f_score[class_] = 0
-
     # Creating confusion matrix
     for c in classifications:
       (instance, label, prediction) = c
@@ -61,8 +51,21 @@ class CrossValidation(object):
 
     print(confusion)
 
+    # Get classes
+    for i in range(len(confusion.columns)):
+      classes.append(confusion.columns[i])
+
     # Sum of all confusion matrix values
     confusion_matrix_sum = sum([sum(row) for row in confusion.values])
+
+    for class_ in classes:
+      true_positives[class_] = 0
+      true_negatives[class_] = 0
+      false_positives[class_] = 0
+      false_negatives[class_] = 0
+      precision[class_] = 0
+      recall[class_] = 0
+      f_score[class_] = 0
 
     # TP, FP, FN and TN for each class
     for i in range(len(classes)):
@@ -89,6 +92,10 @@ class CrossValidation(object):
       print("Class", class_, "Precision: ", "{:.2f}".format(precision[class_] * 100) + "%")
       print("Class", class_, "Recall: ", "{:.2f}".format(recall[class_] * 100) + "%")
       print("Class", class_, "F-Score: ", "{:.2f}".format(f_score[class_] * 100) + "%")
+      print("VP Class", class_, true_positives[class_])
+      print("FP Class", class_, false_positives[class_])
+      print("FN Class", class_, false_negatives[class_])
+      print("VN Class", class_, true_negatives[class_])
       total_precision += precision[class_]
 
     # Micro F-Score

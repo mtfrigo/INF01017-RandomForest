@@ -85,10 +85,6 @@ class CrossValidation(object):
       print("Class", class_, "Precision: ", "{:.2f}".format(precision[class_] * 100) + "%")
       print("Class", class_, "Recall: ", "{:.2f}".format(recall[class_] * 100) + "%")
       print("Class", class_, "F-Score: ", "{:.2f}".format(f_score[class_] * 100) + "%")
-      print("VP Class", class_, true_positives[class_])
-      print("FP Class", class_, false_positives[class_])
-      print("FN Class", class_, false_negatives[class_])
-      print("VN Class", class_, true_negatives[class_])
       total_precision += precision[class_]
 
     # Micro F-Score

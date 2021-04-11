@@ -11,7 +11,6 @@ class CrossValidation(object):
   def bagging(self, k):
     folds = self.data_frame.stratify(k)
 
-
     self.test_set = self.data_frame.create_subset(folds.pop(0)) 
 
     merged_folds = []
@@ -56,8 +55,8 @@ class CrossValidation(object):
       all_classes.append(label)
       all_predictions.append(prediction)
 
-    y_actu = pd.Series(all_classes, name='Classe verdadeira')
-    y_pred = pd.Series(all_predictions, name='Classe predita')
+    y_actu = pd.Series(all_classes, name='True class')
+    y_pred = pd.Series(all_predictions, name='Predicted class')
     confusion = pd.crosstab(y_pred, y_actu)
 
     print(confusion)
@@ -81,7 +80,12 @@ class CrossValidation(object):
       total_FN += false_negatives[class_]
       precision[class_] = true_positives[class_] / (true_positives[class_] + false_positives[class_])
       recall[class_] = true_positives[class_] / (true_positives[class_] + false_negatives[class_])
-      f_score[class_] = 2 * ((precision[class_] * recall[class_]) / (precision[class_] + recall[class_]))
+
+      if  (precision[class_] + recall[class_]) != 0:
+        f_score[class_] = 2 * ((precision[class_] * recall[class_]) / (precision[class_] + recall[class_]))
+      else:      
+        f_score[class_] = 0
+      
       print("Class", class_, "Precision: ", "{:.2f}".format(precision[class_] * 100) + "%")
       print("Class", class_, "Recall: ", "{:.2f}".format(recall[class_] * 100) + "%")
       print("Class", class_, "F-Score: ", "{:.2f}".format(f_score[class_] * 100) + "%")

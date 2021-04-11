@@ -182,7 +182,6 @@ class Node(object):
     self.info_gain = 0
 
     self.attributes_pool = []
-    self.attributes_list = []
 
   def append_child(self, value, Node):
     self.value[value] = Node

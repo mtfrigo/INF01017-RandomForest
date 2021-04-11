@@ -5,12 +5,13 @@ import pandas as pd
 #from pandas_ml import ConfusionMatrix
 
 class RandomForest(object):
-  def __init__(self, train_set, n_trees):
+  def __init__(self, train_set, n_trees, discretization):
     print("Generating random forest...")
 
     self.data_frame = train_set
     self.n_trees = n_trees
     self.trees = []
+    self.discretization = discretization
 
     self.generate()
 
@@ -20,8 +21,13 @@ class RandomForest(object):
   def bootstrap(self):
     for n in range(self.n_trees):
       (data_frame_train, data_frame_test) = self.data_frame.bootstrap(1)
-      tree = DecisionTree(data_frame_train.discretize_by_neighborhood())
-      # tree = DecisionTree(data_frame_train.discretize_by_mean())
+
+      if(self.discretization == "mean"):
+        discretized_data = data_frame_train.discretize_by_mean()
+      elif(self.discretization == "neighborhood"):
+        discretized_data = data_frame_train.discretize_by_neighborhood()
+
+      tree = DecisionTree(discretized_data)
       self.trees.append(tree)
 
   def classify(self, test_instance):

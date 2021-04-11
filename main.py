@@ -15,6 +15,7 @@ if __name__ == '__main__':
   parser.add_argument("--n_trees", type=int, default=10, help="The number of trees to ensemble in the random forest. The default is 10.")
   parser.add_argument("--k_folds", type=int, default=10, help="The number of folds used in the cross-validation. The default is 10.")
   parser.add_argument("--algorithm", type=str, default="RandomForest", help="The algorithm to be executed. Could be either RandomForest or DecisionTree.")
+  parser.add_argument("--discretization", type=str, default="neighborhood", help="The method to be executed to discretize the data. Could be either mean or neighborhood.")
   parser.add_argument("--benchmark", type=bool, default=False, help="If the execution should follow the benchmark walkthough.")
   parser.add_argument("--print_tree", type=bool, default=False, help="If the tree generated in the DecisionTree algorithm should be printed.")
 
@@ -134,13 +135,24 @@ if __name__ == '__main__':
         tree.print_tree()
       elif args.algorithm == "RandomForest":
         validation = CrossValidation(data_frame, args.k_folds)
-        forest = RandomForest(validation.train_set, args.n_trees)
+        forest = RandomForest(validation.train_set, args.n_trees, args.discretization)
         classifications = forest.classify_dataset(validation.test_set)
         validation.validate(classifications)
       elif args.algorithm == "DecisionTree":
-        tree = DecisionTree(data_frame.discretize_by_neighborhood())
+        validation = CrossValidation(data_frame, args.k_folds)
+
+        if(args.discretization == "mean"):
+          discretized_data = validation.train_set.discretize_by_mean()
+        elif(args.discretization == "neighborhood"):
+
+          discretized_data = validation.train_set.discretize_by_neighborhood()
+          
+        tree = DecisionTree(discretized_data)
+        
         if args.print_tree == True:
           tree.print_tree()
+
+        tree.evaluate(validation.test_set)
       else:
         print("The chosen algorithm is not supported")
     else:
